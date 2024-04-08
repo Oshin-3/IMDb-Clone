@@ -4,7 +4,6 @@ function Pagination(props) {
 
     let { onPageChange } = props
 
-    console.log(onPageChange)
     const total_pages = 500
     const maxVisiblePageCount = 10
 
