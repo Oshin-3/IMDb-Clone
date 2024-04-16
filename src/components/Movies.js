@@ -74,9 +74,9 @@ function Movies() {
                                 {movie.title.length > 50 ? movie.title.substring(0, 50) + "..." : movie.title}
                             </div>
                             <div className='w-[170px] h-[5vh] text-sky-600 text-center p-1 bg-opacity-40 bg-black rounded-l m-2 mt-12'>
-                                
+
                                 {
-                                    watchlist.some(item => {return JSON.stringify(item) === JSON.stringify(movie)})  ? (
+                                    watchlist.some(item => {return JSON.stringify(item.id) === JSON.stringify(movie.id)})  ? (
                                         <button onClick={() => removeFromWatchlist(movie)} ><span className='pr-2'><FontAwesomeIcon icon={faCheck} /></span>Watchlist</button>
                                         
                                     ) : (
