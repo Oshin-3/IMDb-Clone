@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronUp, faStar } from '@fortawesome/free-solid-svg-icons';
 import Movies from './Movies';
 
 function Watchlist() {
@@ -8,7 +8,8 @@ function Watchlist() {
   const [favorites, setFavorites] = useState([])
   const [genres, setGenres] = useState([])
   let [filteredArray, setFilteredArray] = useState([])
-
+  let [sortCriteria, setSortCriteria] = useState("List Order")
+  let [sortOrder, setSortOrder] = useState(1)
 
   let genreIds = {
     28: "Action",
@@ -38,8 +39,9 @@ function Watchlist() {
 
     setFavorites(moviesFromLocalstorage)
     setFilteredArray(moviesFromLocalstorage)
+    
   }, [])
-
+console.log(filteredArray)
   useEffect(() => {
     //let temp = favorites.map((movie) => genreIds[movie.genre_ids[0]])
     let temp = favorites.map((movie) => {
@@ -54,6 +56,9 @@ function Watchlist() {
     //     }
     //   })
     // })
+    // temp.flat() flattens the nested array temp into a single array.
+    // new Set() creates a Set object, which automatically removes duplicate values.
+    // Array.from() converts the Set back into an array.
     let removeDup = Array.from(new Set(temp.flat()));
     setGenres([...removeDup])
 
@@ -61,13 +66,51 @@ function Watchlist() {
 
   const handleGenre = (e) => {
     let selectedGenre = e.target.value.trim(); // Trim whitespace
-    filteredArray = selectedGenre == "All Genres" 
-        ? favorites
-        : favorites.filter((movie) => {
-            //return genreIds[movie.genre_ids[0]].trim() === selectedGenre; // Trim whitespace
-            // Check if every genre ID in movie.genre_ids matches selectedGenre
-            return movie.genre_ids.some((genre) => genreIds[genre].trim() === selectedGenre); // Trim whitespace
-        });
+    filteredArray = selectedGenre == "All Genres"
+      ? favorites
+      : favorites.filter((movie) => {
+        //return genreIds[movie.genre_ids[0]].trim() === selectedGenre; // Trim whitespace
+        // Check if every genre ID in movie.genre_ids matches selectedGenre
+        return movie.genre_ids.some((genre) => genreIds[genre].trim() === selectedGenre); // Trim whitespace
+      });
+    setFilteredArray(filteredArray)
+  }
+
+  //sorting logic 
+  console.log("Sort creteria> ", sortCriteria)
+  const sortAscending = () => {
+    setSortOrder(1)
+    switch(sortCriteria)
+    {
+      case "List Order": return filteredArray = filteredArray.reverse()
+      case "Rating": return filteredArray = filteredArray.sort((objA, objB) => {
+        return objA.vote_average - objB.vote_average
+      })
+      case "Release Year": return filteredArray = filteredArray.sort((objA, objB) => {
+        return objA.release_date.substring(0, 4) - objB.release_date.substring(0, 4)
+      })
+      case "Popularity": return filteredArray = filteredArray.sort((objA, objB) => {
+        return objA.popularity - objB.popularity
+      })
+    }
+    setFilteredArray(filteredArray)
+  }
+
+  const sortDecending = () => {
+    setSortOrder(-1)
+    switch(sortCriteria)
+    {
+      case "List Order": return filteredArray = filteredArray.reverse()
+      case "Rating": return filteredArray = filteredArray.sort((objA, objB) => {
+        return objB.vote_average - objA.vote_average
+      })
+      case "Release Year": return filteredArray = filteredArray.sort((objA, objB) => {
+        return objB.release_date.substring(0, 4) - objA.release_date.substring(0, 4)
+      })
+      case "Popularity": return filteredArray = filteredArray.sort((objA, objB) => {
+        return objB.popularity - objA.popularity
+      })
+    }
     setFilteredArray(filteredArray)
   }
 
@@ -76,7 +119,7 @@ function Watchlist() {
       <div className='w-[120vh] bg-slate-50 mt-3'>
         <div className='h-[15vh] p-4 border-b-4 mb-3'>
           <p className='text-3xl'>Your Watchlist</p>
-          <div className='flex space-x-2 p-2'>
+          <div className='flex space-x-2 p-2 w-full flow-root'>
             <select onChange={handleGenre} className='bg-gray-300 p-1 rounded-l border w-[17vh]'>
               <option value="All Genres">All Genres</option>
               {
@@ -88,6 +131,22 @@ function Watchlist() {
               }
             </select>
 
+            <div className=' float-right space-x-1'>
+              <label>Sort By: </label>
+              <select className='bg-gray-300 p-1 rounded-l border ' onChange={(e) => setSortCriteria(e.target.value)}>
+                <option value="List Order">List Order</option>
+                <option value="Popularity">Popularity</option>
+                <option value="Rating">Rating</option>
+                <option value="Release Year">Release Year</option>
+              </select>
+              {
+                sortOrder == 1 ? (
+                  <><FontAwesomeIcon className='pr-2 text-gray-300 pointer-events-none' icon={faChevronDown} /><FontAwesomeIcon onClick={sortDecending} icon={faChevronUp} /></>) :
+                  (<><FontAwesomeIcon onClick={sortAscending} className='pr-2' icon={faChevronDown} /><FontAwesomeIcon className='text-gray-300' icon={faChevronUp} /></>)
+              }
+
+            </div>
+
           </div>
         </div>
 
@@ -95,7 +154,7 @@ function Watchlist() {
           {
 
             filteredArray.map((favMovie) => {
-              
+
               return <div key={favMovie.id} className='flex h-[35vh] border-b-2 p-4 mb-3'>
                 <div className='rounded-xl w-[17vh] h-[25vh] bg-center bg-cover md:h[40vh] md:w[180px]'
                   style={{
@@ -109,8 +168,9 @@ function Watchlist() {
                   </div>
                   <div className='text-zinc-400 text-xs'>
                     {favMovie.release_date.substring(0, 4) + " | "}
-                    {favMovie.genre_ids.map((genre, idx) => idx < favMovie.genre_ids.length - 1 ? genreIds[genre] + " , " : genreIds[genre])}
+                    {favMovie.genre_ids.map((genre, idx) => idx < favMovie.genre_ids.length - 1 ? genreIds[genre] + ", " : genreIds[genre])}
                     {/* | 1h 46m | G | Animation, Adventure, Comedy */}
+                    
                   </div>
                   <div className='pt-1'>
                     <span className='pr-2'><FontAwesomeIcon icon={faStar} color='gold' /></span>
