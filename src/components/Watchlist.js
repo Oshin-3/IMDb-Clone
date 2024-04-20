@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronUp, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronUp, faStar, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import Movies from './Movies';
 
 function Watchlist() {
@@ -10,6 +10,9 @@ function Watchlist() {
   let [filteredArray, setFilteredArray] = useState([])
   let [sortCriteria, setSortCriteria] = useState("List Order")
   let [sortOrder, setSortOrder] = useState(1)
+  let [selectedMovieCount, setSelectedMovieCount] = useState(0)
+  let [editFlag, setEditFlag] = useState(0)
+  let [movieIds, setMovieIds] = useState([])
 
   let genreIds = {
     28: "Action",
@@ -39,9 +42,9 @@ function Watchlist() {
 
     setFavorites(moviesFromLocalstorage)
     setFilteredArray(moviesFromLocalstorage)
-    
+
   }, [])
-console.log(filteredArray)
+
   useEffect(() => {
     //let temp = favorites.map((movie) => genreIds[movie.genre_ids[0]])
     let temp = favorites.map((movie) => {
@@ -77,11 +80,10 @@ console.log(filteredArray)
   }
 
   //sorting logic 
-  console.log("Sort creteria> ", sortCriteria)
+
   const sortAscending = () => {
     setSortOrder(1)
-    switch(sortCriteria)
-    {
+    switch (sortCriteria) {
       case "List Order": return filteredArray = filteredArray.reverse()
       case "Rating": return filteredArray = filteredArray.sort((objA, objB) => {
         return objA.vote_average - objB.vote_average
@@ -98,8 +100,7 @@ console.log(filteredArray)
 
   const sortDecending = () => {
     setSortOrder(-1)
-    switch(sortCriteria)
-    {
+    switch (sortCriteria) {
       case "List Order": return filteredArray = filteredArray.reverse()
       case "Rating": return filteredArray = filteredArray.sort((objA, objB) => {
         return objB.vote_average - objA.vote_average
@@ -114,11 +115,53 @@ console.log(filteredArray)
     setFilteredArray(filteredArray)
   }
 
+  //handle movie selection
+  const handleCheckbox = (e) => {
+    const movie_id =  Number(e.target.dataset.id)
+    //console.log(e.target.checked)
+    let movieList = [...movieIds]
+    if (e.target.checked == true) {
+      setSelectedMovieCount(selectedMovieCount + 1)
+      movieList.push(movie_id)
+      setMovieIds(movieList)
+    }
+    else {
+      setSelectedMovieCount(selectedMovieCount - 1)
+      const index = movieList.indexOf(movie_id);
+      if (index > -1) { 
+        movieList.splice(index, 1); 
+      }
+      setMovieIds(movieList)
+    }
+
+  }
+  //console.log(movieIds)
+
+  //remove movie from watchlist
+  const removeFromWatchlist = () => {
+    if (movieIds.length > 0)
+    {
+      const moviesAfterDelete = filteredArray.filter((movie) => !movieIds.includes(movie.id))
+      console.log(moviesAfterDelete)
+      setFilteredArray(moviesAfterDelete)
+      localStorage.setItem('imdb', JSON.stringify(moviesAfterDelete))
+      setEditFlag(0)
+    }
+  }
+
   return (
     <div className='flex justify-center w-full bg-gray-300'>
       <div className='w-[120vh] bg-slate-50 mt-3'>
-        <div className='h-[15vh] p-4 border-b-4 mb-3'>
-          <p className='text-3xl'>Your Watchlist</p>
+        <div className='h-[15vh] p-4 border-b-4 '>
+          <div className='float-root bg-blue-600 items-center'>
+            <p className='text-3xl float-left'>Your Watchlist</p>
+            {
+              editFlag == 0 ? (<div className='pl-10 text-xl float-right mr-3 text-gray-400' onClick={() => setEditFlag(1)}>
+                <FontAwesomeIcon icon={faPenToSquare}></FontAwesomeIcon>
+                <span>EDIT</span>
+              </div>) : ""
+            }
+          </div>
           <div className='flex space-x-2 p-2 w-full flow-root'>
             <select onChange={handleGenre} className='bg-gray-300 p-1 rounded-l border w-[17vh]'>
               <option value="All Genres">All Genres</option>
@@ -146,16 +189,26 @@ console.log(filteredArray)
               }
 
             </div>
-
           </div>
         </div>
+        {
+          //console.log(editFlag)
+          editFlag == 1 ? (<div className=' p-2 pl-6 bg-gray-200 h-[8vh] border-b-4'>
+            <input className="mr-4 w-4 h-4" type='checkbox' /><span className='pr-4'> {selectedMovieCount} selected</span>
+            <button onClick={removeFromWatchlist} className='text-center text-xs text-white bg-sky-600 p-2 rounded-xl '>DELETE</button>
+          </div>) : ""
+        }
 
         <div>
           {
 
             filteredArray.map((favMovie) => {
 
-              return <div key={favMovie.id} className='flex h-[35vh] border-b-2 p-4 mb-3'>
+              return <div key={favMovie.id} className='flex h-[35vh] border-b-2 p-4 mb-3 mr-3'>
+                {editFlag == 1 ? (<div className='flex items-center pl-2'>
+                  <input onChange={handleCheckbox} className='w-4 h-4 mr-4' data-id={favMovie.id} type='checkbox' />
+                </div>) : ""}
+
                 <div className='rounded-xl w-[17vh] h-[25vh] bg-center bg-cover md:h[40vh] md:w[180px]'
                   style={{
                     backgroundImage: `url(https://image.tmdb.org/t/p/original/t/p/w500/${favMovie.poster_path})`
@@ -170,7 +223,7 @@ console.log(filteredArray)
                     {favMovie.release_date.substring(0, 4) + " | "}
                     {favMovie.genre_ids.map((genre, idx) => idx < favMovie.genre_ids.length - 1 ? genreIds[genre] + ", " : genreIds[genre])}
                     {/* | 1h 46m | G | Animation, Adventure, Comedy */}
-                    
+
                   </div>
                   <div className='pt-1'>
                     <span className='pr-2'><FontAwesomeIcon icon={faStar} color='gold' /></span>
