@@ -51,24 +51,18 @@ function Watchlist() {
       return movie.genre_ids.map((genre) => genreIds[genre] + " ")
     })
 
-    // let removeDup = []
-    // temp.forEach((genres) => {
-    //   genres.forEach((genre) => {
-    //     if (!removeDup.includes(genre)) {
-    //       removeDup.push(genre)
-    //     }
-    //   })
-    // })
+
     // temp.flat() flattens the nested array temp into a single array.
     // new Set() creates a Set object, which automatically removes duplicate values.
     // Array.from() converts the Set back into an array.
     let removeDup = Array.from(new Set(temp.flat()));
     setGenres([...removeDup])
-
+    
   }, [favorites])
 
   const handleGenre = (e) => {
     let selectedGenre = e.target.value.trim(); // Trim whitespace
+    
     filteredArray = selectedGenre == "All Genres"
       ? favorites
       : favorites.filter((movie) => {
@@ -117,7 +111,7 @@ function Watchlist() {
 
   //handle movie selection
   const handleCheckbox = (e) => {
-    const movie_id =  Number(e.target.dataset.id)
+    const movie_id = Number(e.target.dataset.id)
     //console.log(e.target.checked)
     let movieList = [...movieIds]
     if (e.target.checked == true) {
@@ -128,8 +122,8 @@ function Watchlist() {
     else {
       setSelectedMovieCount(selectedMovieCount - 1)
       const index = movieList.indexOf(movie_id);
-      if (index > -1) { 
-        movieList.splice(index, 1); 
+      if (index > -1) {
+        movieList.splice(index, 1);
       }
       setMovieIds(movieList)
     }
@@ -139,13 +133,15 @@ function Watchlist() {
 
   //remove movie from watchlist
   const removeFromWatchlist = () => {
-    if (movieIds.length > 0)
-    {
-      const moviesAfterDelete = filteredArray.filter((movie) => !movieIds.includes(movie.id))
+    if (movieIds.length > 0) {
+      const moviesAfterDelete = favorites.filter((movie) => !movieIds.includes(movie.id))
       console.log(moviesAfterDelete)
       setFilteredArray(moviesAfterDelete)
+      setFavorites(moviesAfterDelete)
       localStorage.setItem('imdb', JSON.stringify(moviesAfterDelete))
       setEditFlag(0)
+      setSelectedMovieCount(0)
+      window.location.reload()
     }
   }
 
@@ -162,13 +158,12 @@ function Watchlist() {
               </div>) : ""
             }
           </div>
+         
           <div className='flex space-x-2 p-2 w-full flow-root'>
             <select onChange={handleGenre} className='bg-gray-300 p-1 rounded-l border w-[17vh]'>
               <option value="All Genres">All Genres</option>
               {
                 genres.map((genre) => {
-                  //return <div key={idx}>{genre}</div>
-                  //console.log(genre)
                   return <option key={genre} value={genre}>{genre}</option>
                 })
               }
