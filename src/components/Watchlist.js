@@ -13,6 +13,8 @@ function Watchlist() {
   let [selectedMovieCount, setSelectedMovieCount] = useState(0)
   let [editFlag, setEditFlag] = useState(0)
   let [movieIds, setMovieIds] = useState([])
+  let [selectAllFlg, setselectAllFlg] = useState(false)
+  let [isChecked, setIsChecked] = useState(false);
 
   let genreIds = {
     28: "Action",
@@ -57,12 +59,12 @@ function Watchlist() {
     // Array.from() converts the Set back into an array.
     let removeDup = Array.from(new Set(temp.flat()));
     setGenres([...removeDup])
-    
+
   }, [favorites])
 
   const handleGenre = (e) => {
     let selectedGenre = e.target.value.trim(); // Trim whitespace
-    
+
     filteredArray = selectedGenre == "All Genres"
       ? favorites
       : favorites.filter((movie) => {
@@ -133,15 +135,38 @@ function Watchlist() {
 
   //remove movie from watchlist
   const removeFromWatchlist = () => {
+
+    if (isChecked == true) {
+      setFavorites([])
+      setFilteredArray([])
+      localStorage.setItem('imdb', JSON.stringify([]))
+    }
     if (movieIds.length > 0) {
       const moviesAfterDelete = favorites.filter((movie) => !movieIds.includes(movie.id))
       console.log(moviesAfterDelete)
       setFilteredArray(moviesAfterDelete)
       setFavorites(moviesAfterDelete)
       localStorage.setItem('imdb', JSON.stringify(moviesAfterDelete))
-      setEditFlag(0)
+
+
+    }
+    setEditFlag(0)
+    setSelectedMovieCount(0)
+    setselectAllFlg(false)
+    window.location.reload()
+  }
+
+  const handleSelectAll = (e) => {
+    
+    if (e.target.checked == true) {
+      setIsChecked(true)
+      setselectAllFlg(true)
+      setSelectedMovieCount(filteredArray.length)
+    }
+    else {
+      setIsChecked(false)
+      setselectAllFlg(false)
       setSelectedMovieCount(0)
-      window.location.reload()
     }
   }
 
@@ -158,7 +183,7 @@ function Watchlist() {
               </div>) : ""
             }
           </div>
-         
+
           <div className='flex space-x-2 p-2 w-full flow-root'>
             <select onChange={handleGenre} className='bg-gray-300 p-1 rounded-l border w-[17vh]'>
               <option value="All Genres">All Genres</option>
@@ -189,20 +214,32 @@ function Watchlist() {
         {
           //console.log(editFlag)
           editFlag == 1 ? (<div className=' p-2 pl-6 bg-gray-200 h-[8vh] border-b-4'>
-            <input className="mr-4 w-4 h-4" type='checkbox' /><span className='pr-4'> {selectedMovieCount} selected</span>
+            <input onChange={handleSelectAll} className="mr-4 w-4 h-4" type='checkbox' /><span className='pr-4'> {selectedMovieCount} selected</span>
             <button onClick={removeFromWatchlist} className='text-center text-xs text-white bg-sky-600 p-2 rounded-xl '>DELETE</button>
           </div>) : ""
         }
 
         <div>
           {
+            filteredArray.length == 0 ? (<div className='p-4'>No Movies</div>) : ""
+          }
+          {
 
             filteredArray.map((favMovie) => {
 
               return <div key={favMovie.id} className='flex h-[35vh] border-b-2 p-4 mb-3 mr-3'>
-                {editFlag == 1 ? (<div className='flex items-center pl-2'>
-                  <input onChange={handleCheckbox} className='w-4 h-4 mr-4' data-id={favMovie.id} type='checkbox' />
-                </div>) : ""}
+                {
+                  console.log(selectAllFlg)
+                }
+                {
+          
+                editFlag == 1 ? (<div className='flex items-center pl-2'>
+                  
+                  {selectAllFlg == true ? (<input checked={isChecked} onChange={handleCheckbox} className='w-4 h-4 mr-4' data-id={favMovie.id} type='checkbox' />) : 
+                  (<input onChange={handleCheckbox} className='w-4 h-4 mr-4' data-id={favMovie.id} type='checkbox' />)}
+                </div>) : <></>
+                 
+                }
 
                 <div className='rounded-xl w-[17vh] h-[25vh] bg-center bg-cover md:h[40vh] md:w[180px]'
                   style={{
