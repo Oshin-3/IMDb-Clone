@@ -1,13 +1,13 @@
 import React from 'react'
 import NavBar from './NavBar'
-import Banner from './Banner'
+import Carousel from './Carousel'
 
 
 function HomePage() {
   return (
     <div>
         
-        <Banner />
+        <Carousel />
         
     </div>
   )

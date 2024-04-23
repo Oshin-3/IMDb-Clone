@@ -45,14 +45,14 @@ function Movies() {
         // console.log("from local storage> ", moviesFromLocalstorage)
 
         // setWatchlist(moviesFromLocalstorage)
-        console.log("Watchlist updated: ", watchlist);
+        //console.log("Watchlist updated: ", watchlist);
         fetchMovies(1)
         
     },[])
 
 
     return (
-        <div className='p-3 mt-2 w-full '>
+        <div className='p-3 mt-2 w-full  '>
             <div className='text-2xl mb-3 font-bold text-amber-400 pl-2'>
                 Trending Movies
             </div>
