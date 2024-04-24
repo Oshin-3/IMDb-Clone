@@ -1,6 +1,7 @@
 import React from 'react'
 import NavBar from './NavBar'
 import Carousel from './Carousel'
+import UpcomingMovies from './UpcomingMovies'
 
 
 function HomePage() {
@@ -8,7 +9,7 @@ function HomePage() {
     <div>
         
         <Carousel />
-        
+        <UpcomingMovies />
     </div>
   )
 }
