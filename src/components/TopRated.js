@@ -2,52 +2,37 @@ import React from 'react'
 import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useState, useEffect } from 'react'
-import { faFilm, faCheck, faPlus, faAngleLeft, faAngleRight } from '@fortawesome/free-solid-svg-icons'
+import { faStar, faCheck, faPlus, faAngleLeft, faAngleRight } from '@fortawesome/free-solid-svg-icons'
 
-function UpcomingMovies() {
+function TopRated() {
 
-    const [upcomingMovies, setUpcomingMovies] = useState([])
+    const [topRatedMovies, setTopRatedMovies] = useState([])
     const [watchlist, setWatchlist] = useState(JSON.parse(localStorage.getItem('imdb')) || [])
     const [activeIndex, setActiveIndex] = useState(0);
 
-    const fetchUpcomingMovies = async () => {
-        const currentDate = new Date();
-        let page = 1;
-        let upcomingMovies = [];
-        let moviesCount = 0;
+    const fetchTopRatedMovies = async () => {
+           
+        let topRatedMovies = [];
 
-        while (upcomingMovies.length < 20) {
-            try {
-                const response = await axios.get(`https://api.themoviedb.org/3/movie/upcoming?api_key=731e37b9dcf15c6797f4888e7858a66d&page=${page}`);
-                let movies = response.data.results.filter(movie => new Date(movie.release_date) > currentDate);
+        try {
+            const response = await axios.get(`https://api.themoviedb.org/3/movie/top_rated?api_key=731e37b9dcf15c6797f4888e7858a66d`);
+            topRatedMovies = response.data.results.sort((a, b) => {
+                return b.release_date - a.release_date
+            });
 
-                movies.sort((a, b) => {
-                    return b.popularity - a.popularity;
-                });
-
-                if (movies.length === 0) {
-                    break;
-                }
-
-                // Determine how many more movies can be added without exceeding 10
-                const remainingMoviesCount = 20 - upcomingMovies.length;
-                upcomingMovies = upcomingMovies.concat(movies.slice(0, remainingMoviesCount));
-                moviesCount += movies.length;
-                page++;
-            } catch (error) {
-                console.error('Error fetching upcoming movies:', error);
-                break; // Break the loop if an error occurs
-            }
+        } catch (error) {
+            console.error('Error fetching top rated movies:', error);
         }
 
-        setUpcomingMovies(upcomingMovies);
+        setTopRatedMovies(topRatedMovies);
     }
 
 
     useEffect(() => {
-        fetchUpcomingMovies()
+        fetchTopRatedMovies()
     }, [])
 
+    
     //add to watchlist
     const addToWatchlist = (movie) => {
         const newWatchlist = [...watchlist, movie]
@@ -68,26 +53,23 @@ function UpcomingMovies() {
     const prevSlide = () => {
 
         setActiveIndex((prevIndex) =>
-          prevIndex === 0 ? upcomingMovies.length - 1 : prevIndex - 1
+            prevIndex === 0 ? topRatedMovies.length - 1 : prevIndex - 1
         );
-    
-      };
-    
-      const nextSlide = () => {
-    
+
+    };
+
+    const nextSlide = () => {
+
         setActiveIndex((prevIndex) =>
-          prevIndex === upcomingMovies.length - 1 ? 0 : prevIndex + 1
+            prevIndex === topRatedMovies.length - 1 ? 0 : prevIndex + 1
         );
-      };
+    };
 
-      //console.log(activeIndex)
-
-    //console.log(upcomingMovies)
     return (
         <>
             <div className=' w-full'>
                 <div className='text-2xl mt-5 ml-7 font-bold text-amber-400 pl-2'>
-                    Upcoming Movies
+                    Top Rated Movies
                 </div>
                 <div>
                     <div className='carousel-container ml-10 mr-10 border-solid border-transparent border-4'>
@@ -96,8 +78,8 @@ function UpcomingMovies() {
                         </button>
 
                         <div className='carousel-wrapper' style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
-                            {upcomingMovies.map((movie, index) => {
-                             
+                            {topRatedMovies.map((movie, index) => {
+                                
                                 return <div key={movie.id} className={`w-[190px] h-[65vh] m-5 hover:scale-110 duration-300 rounded-lg ${index%5 == 0 ? "mr-6" : ""}`}>
                                     <div className='w-[190px] h-[40vh] bg-center bg-cover md:h[40vh] md:w[180px] rounded-t-lg'
                                         style={{
@@ -107,8 +89,8 @@ function UpcomingMovies() {
                                     </div>
                                     <div className='w-[190px] h-[25vh] bg-zinc-900 rounded-b-lg pt-2'>
                                         <div className='text-slate-50 w-full pl-2'>
-                                            <span className='pr-2 text-sky-600'><FontAwesomeIcon icon={faFilm} /></span>
-                                            {movie.release_date.substring(8, 10) + "/" + movie.release_date.substring(5, 7) + "/" + movie.release_date.substring(0, 4)}
+                                            <span className='pr-2'><FontAwesomeIcon icon={faStar} color='gold' /></span>
+                                            {movie.vote_average.toFixed(1) == 0 ? "Coming Soon" : movie.vote_average.toFixed(1)}
                                         </div>
                                         <div className='h-[5vh] text-slate-50 font-bold w-full pl-2 pr-2 mt-2'>
                                             {movie.title.length > 50 ? movie.title.substring(0, 50) + "..." : movie.title}
@@ -141,4 +123,4 @@ function UpcomingMovies() {
     )
 }
 
-export default UpcomingMovies
+export default TopRated

@@ -43,10 +43,18 @@
 
 .carousel-wrapper {
   display: flex;
-  transition: transform 0.5s ease; /* Add transition for smooth sliding */
+  transition: transform 0.5s ease;
 }
 
 .carousel-slide {
   flex: 0 0 auto;
   width: 100%;
+}
+
+.carousel-wrapper-movies
+{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  transition: transform 0.5s ease;
 }

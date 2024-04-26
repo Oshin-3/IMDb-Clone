@@ -3,7 +3,7 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleLeft, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import '../App.css';
-import { width } from '@fortawesome/free-brands-svg-icons/fa42Group';
+
 
 function Carousel() {
   const [topPicksMovies, setTopPicksMovies] = useState([]);
