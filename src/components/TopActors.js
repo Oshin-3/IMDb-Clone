@@ -9,15 +9,32 @@ function TopActors() {
     const [activeIndex, setActiveIndex] = useState(0);
 
     const fetchTopActorsMovies = async () => {
-
+        let page = 1;
         let topActor = [];
+        let actorCount = 0;
 
-        try {
-            const response = await axios.get(`https://api.themoviedb.org/3/trending/person/day?api_key=731e37b9dcf15c6797f4888e7858a66d`);
-            topActor = response.data.results.filter(actor => actor.known_for_department == "Acting")
+        while (topActor.length < 20) {
+            try {
+                const response = await axios.get(`https://api.themoviedb.org/3/trending/person/day?api_key=731e37b9dcf15c6797f4888e7858a66d&page=${page}`);
+                let actors = response.data.results.filter(actor => actor.known_for_department == "Acting");
 
-        } catch (error) {
-            console.error('Error fetching top actors movies:', error);
+                actors.sort((a, b) => {
+                    return b.popularity - a.popularity;
+                });
+
+                if (actors.length === 0) {
+                    break;
+                }
+
+                // Determine how many more movies can be added without exceeding 10
+                const remainingActorsCount = 20 - topActor.length;
+                topActor = topActor.concat(actors.slice(0, remainingActorsCount));
+                actorCount += actors.length;
+                page++;
+            } catch (error) {
+                console.error('Error fetching top actors movies:', error);
+                break; // Break the loop if an error occurs
+            }
         }
 
         setTopActors(topActor);
@@ -26,6 +43,8 @@ function TopActors() {
     useEffect(() => {
         fetchTopActorsMovies()
     }, [])
+
+    console.log(topActors)
 
     const prevSlide = () => {
 
