@@ -1,22 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronUp, faStar, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
-import Movies from './Movies';
+import { faChevronDown, faChevronUp, faStar, faPenToSquare, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { useSelector, useDispatch } from 'react-redux';
+import { setFilteredGenre, setFilteredMovies, setSortCriteria, sortOrder, setSorting, setEditFlag, setIsChecked, setselectAllFlg, setSelectedMovieCount, setMovieIds, removeMovies } from '../stores/watchlistFunctionsSlice';
 
 function Watchlist() {
 
-  const [favorites, setFavorites] = useState([])
-  const [genres, setGenres] = useState([])
-  let [filteredArray, setFilteredArray] = useState([])
-  let [sortCriteria, setSortCriteria] = useState("List Order")
-  let [sortOrder, setSortOrder] = useState(1)
-  let [selectedMovieCount, setSelectedMovieCount] = useState(0)
-  let [editFlag, setEditFlag] = useState(0)
-  let [movieIds, setMovieIds] = useState([])
-  let [selectAllFlg, setselectAllFlg] = useState(false)
-  let [isChecked, setIsChecked] = useState(false);
+  let favorites = useSelector((state) => state.watchlistMovies)
+  const { filteredGenre: genres, filteredMovies: filteredArray, sortOrder: sortOrder, sortCriteria: sortCriteria, editFlag: editFlag, isChecked: isChecked, selectAllFlg: selectAllFlg, selectedMovieCount: selectedMovieCount, movieIds: movieIds } = useSelector((state) => state.watchlistFunctions)
 
-  let genreIds = {
+  const dispatch = useDispatch()
+
+  let GENRES = {
     28: "Action",
     12: "Adventure",
     16: "Animation",
@@ -39,134 +34,73 @@ function Watchlist() {
   }
 
   useEffect(() => {
-    let moviesFromLocalstorage = localStorage.getItem('imdb')
-    moviesFromLocalstorage = JSON.parse(moviesFromLocalstorage) || []
-
-    setFavorites(moviesFromLocalstorage)
-    setFilteredArray(moviesFromLocalstorage)
-
+    dispatch(setFilteredMovies({ movies: favorites, GENRES: GENRES, selectedGenres: "All Genres" }))
   }, [])
 
   useEffect(() => {
-    //let temp = favorites.map((movie) => genreIds[movie.genre_ids[0]])
     let temp = favorites.map((movie) => {
-      return movie.genre_ids.map((genre) => genreIds[genre] + " ")
+      return movie.genre_ids.map((genre) => GENRES[genre] + " ")
     })
 
+    dispatch(setFilteredGenre(temp))
 
-    // temp.flat() flattens the nested array temp into a single array.
-    // new Set() creates a Set object, which automatically removes duplicate values.
-    // Array.from() converts the Set back into an array.
-    let removeDup = Array.from(new Set(temp.flat()));
-    setGenres([...removeDup])
-
-  }, [favorites])
+  }, [favorites, dispatch])
 
   const handleGenre = (e) => {
     let selectedGenre = e.target.value.trim(); // Trim whitespace
-
-    filteredArray = selectedGenre == "All Genres"
-      ? favorites
-      : favorites.filter((movie) => {
-        //return genreIds[movie.genre_ids[0]].trim() === selectedGenre; // Trim whitespace
-        // Check if every genre ID in movie.genre_ids matches selectedGenre
-        return movie.genre_ids.some((genre) => genreIds[genre].trim() === selectedGenre); // Trim whitespace
-      });
-    setFilteredArray(filteredArray)
+    dispatch(setFilteredMovies({ movies: favorites, GENRES: GENRES, selectedGenres: selectedGenre }))
   }
 
   //sorting logic 
 
+  const selectSortCriteria = (e) => {
+    const criteria = e.target.value
+    dispatch(setSortCriteria(criteria))
+    dispatch(setSorting({ movies: filteredArray, sortCriteria: sortCriteria, sortOrder: sortOrder }))
+  }
+
   const sortAscending = () => {
-    setSortOrder(1)
-    switch (sortCriteria) {
-      case "List Order": return filteredArray = filteredArray.reverse()
-      case "Rating": return filteredArray = filteredArray.sort((objA, objB) => {
-        return objA.vote_average - objB.vote_average
-      })
-      case "Release Year": return filteredArray = filteredArray.sort((objA, objB) => {
-        return objA.release_date.substring(0, 4) - objB.release_date.substring(0, 4)
-      })
-      case "Popularity": return filteredArray = filteredArray.sort((objA, objB) => {
-        return objA.popularity - objB.popularity
-      })
-    }
-    setFilteredArray(filteredArray)
+    dispatch(setSorting({ movies: filteredArray, sortCriteria: sortCriteria, sortOrder: "asc" }))
   }
 
   const sortDecending = () => {
-    setSortOrder(-1)
-    switch (sortCriteria) {
-      case "List Order": return filteredArray = filteredArray.reverse()
-      case "Rating": return filteredArray = filteredArray.sort((objA, objB) => {
-        return objB.vote_average - objA.vote_average
-      })
-      case "Release Year": return filteredArray = filteredArray.sort((objA, objB) => {
-        return objB.release_date.substring(0, 4) - objA.release_date.substring(0, 4)
-      })
-      case "Popularity": return filteredArray = filteredArray.sort((objA, objB) => {
-        return objB.popularity - objA.popularity
-      })
-    }
-    setFilteredArray(filteredArray)
+    dispatch(setSorting({ movies: filteredArray, sortCriteria: sortCriteria, sortOrder: "desc" }))
   }
 
   //handle movie selection
   const handleCheckbox = (e) => {
     const movie_id = Number(e.target.dataset.id)
-    //console.log(e.target.checked)
-    let movieList = [...movieIds]
+
     if (e.target.checked == true) {
-      setSelectedMovieCount(selectedMovieCount + 1)
-      movieList.push(movie_id)
-      setMovieIds(movieList)
+      dispatch(setMovieIds({ selectedMovieCount: selectedMovieCount + 1, movie_id: movie_id, isChecked: true }))
     }
     else {
-      setSelectedMovieCount(selectedMovieCount - 1)
-      const index = movieList.indexOf(movie_id);
-      if (index > -1) {
-        movieList.splice(index, 1);
-      }
-      setMovieIds(movieList)
+      dispatch(setMovieIds({ selectedMovieCount: selectedMovieCount - 1, movie_id: movie_id, isChecked: false }))
     }
 
   }
-  //console.log(movieIds)
 
   //remove movie from watchlist
   const removeFromWatchlist = () => {
 
-    if (isChecked == true) {
-      setFavorites([])
-      setFilteredArray([])
-      localStorage.setItem('imdb', JSON.stringify([]))
-    }
-    if (movieIds.length > 0) {
-      const moviesAfterDelete = favorites.filter((movie) => !movieIds.includes(movie.id))
-      console.log(moviesAfterDelete)
-      setFilteredArray(moviesAfterDelete)
-      setFavorites(moviesAfterDelete)
-      localStorage.setItem('imdb', JSON.stringify(moviesAfterDelete))
-
-
-    }
-    setEditFlag(0)
-    setSelectedMovieCount(0)
-    setselectAllFlg(false)
+    dispatch(removeMovies({ isChecked: isChecked, filteredArray: favorites, movieIds: movieIds }))
+    dispatch(setEditFlag("0"))
+    dispatch(setSelectedMovieCount(0))
+    dispatch(setselectAllFlg(false))
     window.location.reload()
   }
 
   const handleSelectAll = (e) => {
-    
+
     if (e.target.checked == true) {
-      setIsChecked(true)
-      setselectAllFlg(true)
-      setSelectedMovieCount(filteredArray.length)
+      dispatch(setIsChecked(true))
+      dispatch(setselectAllFlg(true))
+      dispatch(setSelectedMovieCount(filteredArray.length))
     }
     else {
-      setIsChecked(false)
-      setselectAllFlg(false)
-      setSelectedMovieCount(0)
+      dispatch(setIsChecked(false))
+      dispatch(setselectAllFlg(false))
+      dispatch(setSelectedMovieCount(0))
     }
   }
 
@@ -177,10 +111,10 @@ function Watchlist() {
           <div className='float-root bg-blue-600 items-center'>
             <p className='text-3xl float-left'>Your Watchlist</p>
             {
-              editFlag == 0 ? (<div className='pl-10 text-xl float-right mr-3 text-gray-400' onClick={() => setEditFlag(1)}>
+              editFlag == "0" ? (<div className='pl-10 text-xl float-right mr-3 text-gray-400' onClick={() => dispatch(setEditFlag("1"))}>
                 <FontAwesomeIcon icon={faPenToSquare}></FontAwesomeIcon>
                 <span>EDIT</span>
-              </div>) : ""
+              </div>) : (<div className='pl-10 text-xl float-right mr-3 text-gray-400' onClick={() => dispatch(setEditFlag("0"))}><FontAwesomeIcon icon={faXmark}></FontAwesomeIcon></div>)
             }
           </div>
 
@@ -196,14 +130,15 @@ function Watchlist() {
 
             <div className=' float-right space-x-1'>
               <label>Sort By: </label>
-              <select className='bg-gray-300 p-1 rounded-l border ' onChange={(e) => setSortCriteria(e.target.value)}>
+              {/* <select className='bg-gray-300 p-1 rounded-l border ' onChange={(e) => setSortCriteria(e.target.value)}> */}
+              <select className='bg-gray-300 p-1 rounded-l border ' onChange={selectSortCriteria}>
                 <option value="List Order">List Order</option>
                 <option value="Popularity">Popularity</option>
                 <option value="Rating">Rating</option>
                 <option value="Release Year">Release Year</option>
               </select>
               {
-                sortOrder == 1 ? (
+                sortOrder == "asc" ? (
                   <><FontAwesomeIcon className='pr-2 text-gray-300 pointer-events-none' icon={faChevronDown} /><FontAwesomeIcon onClick={sortDecending} icon={faChevronUp} /></>) :
                   (<><FontAwesomeIcon onClick={sortAscending} className='pr-2' icon={faChevronDown} /><FontAwesomeIcon className='text-gray-300' icon={faChevronUp} /></>)
               }
@@ -213,7 +148,7 @@ function Watchlist() {
         </div>
         {
           //console.log(editFlag)
-          editFlag == 1 ? (<div className=' p-2 pl-6 bg-gray-200 h-[8vh] border-b-4'>
+          editFlag == "1" ? (<div className=' p-2 pl-6 bg-gray-200 h-[8vh] border-b-4'>
             <input onChange={handleSelectAll} className="mr-4 w-4 h-4" type='checkbox' /><span className='pr-4'> {selectedMovieCount} selected</span>
             <button onClick={removeFromWatchlist} className='text-center text-xs text-white bg-sky-600 p-2 rounded-xl '>DELETE</button>
           </div>) : ""
@@ -228,17 +163,15 @@ function Watchlist() {
             filteredArray.map((favMovie) => {
 
               return <div key={favMovie.id} className='flex h-[35vh] border-b-2 p-4 mb-3 mr-3'>
+
                 {
-                  console.log(selectAllFlg)
-                }
-                {
-          
-                editFlag == 1 ? (<div className='flex items-center pl-2'>
-                  
-                  {selectAllFlg == true ? (<input checked={isChecked} onChange={handleCheckbox} className='w-4 h-4 mr-4' data-id={favMovie.id} type='checkbox' />) : 
-                  (<input onChange={handleCheckbox} className='w-4 h-4 mr-4' data-id={favMovie.id} type='checkbox' />)}
-                </div>) : <></>
-                 
+
+                  editFlag == "1" ? (<div className='flex items-center pl-2'>
+
+                    {selectAllFlg == true ? (<input checked={isChecked} onChange={handleCheckbox} className='w-4 h-4 mr-4' data-id={favMovie.id} type='checkbox' />) :
+                      (<input onChange={handleCheckbox} className='w-4 h-4 mr-4' data-id={favMovie.id} type='checkbox' />)}
+                  </div>) : <></>
+
                 }
 
                 <div className='rounded-xl w-[17vh] h-[25vh] bg-center bg-cover md:h[40vh] md:w[180px]'
@@ -253,7 +186,7 @@ function Watchlist() {
                   </div>
                   <div className='text-zinc-400 text-xs'>
                     {favMovie.release_date.substring(0, 4) + " | "}
-                    {favMovie.genre_ids.map((genre, idx) => idx < favMovie.genre_ids.length - 1 ? genreIds[genre] + ", " : genreIds[genre])}
+                    {favMovie.genre_ids.map((genre, idx) => idx < favMovie.genre_ids.length - 1 ? GENRES[genre] + ", " : GENRES[genre])}
                     {/* | 1h 46m | G | Animation, Adventure, Comedy */}
 
                   </div>

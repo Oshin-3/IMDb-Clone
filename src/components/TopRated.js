@@ -3,66 +3,44 @@ import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useState, useEffect } from 'react'
 import { faStar, faCheck, faPlus, faAngleLeft, faAngleRight } from '@fortawesome/free-solid-svg-icons'
+import { setTopRatedMovies, fetchTopRatedMovies, setActiveIndex } from '../stores/topRatedSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import { addMovieToWatchlist, removeMovieFromWatchlist } from '../stores/watchListSlice'
 
 function TopRated() {
 
-    const [topRatedMovies, setTopRatedMovies] = useState([])
-    const [watchlist, setWatchlist] = useState(JSON.parse(localStorage.getItem('imdb')) || [])
-    const [activeIndex, setActiveIndex] = useState(0);
+    const {status, topRatedMovies : topRatedMovies, activeIndex : activeIndex} = useSelector((state => state.topRatedMovies))
+    const watchlist = useSelector((state) => state.watchlistMovies)
 
-    const fetchTopRatedMovies = async () => {
-           
-        let topRatedMovies = [];
-
-        try {
-            const response = await axios.get(`https://api.themoviedb.org/3/movie/top_rated?api_key=731e37b9dcf15c6797f4888e7858a66d`);
-            topRatedMovies = response.data.results.sort((a, b) => {
-                return b.release_date - a.release_date
-            });
-
-        } catch (error) {
-            console.error('Error fetching top rated movies:', error);
-        }
-
-        setTopRatedMovies(topRatedMovies);
-    }
-
+    const dispatch = useDispatch()
+    useEffect(() => {
+        dispatch(fetchTopRatedMovies());
+    }, [dispatch]);
 
     useEffect(() => {
-        fetchTopRatedMovies()
-    }, [])
+        if (status === 'success') {
+            dispatch(setTopRatedMovies(topRatedMovies));
+        }
+    }, [status, topRatedMovies, dispatch]);
 
-    
     //add to watchlist
     const addToWatchlist = (movie) => {
-        const newWatchlist = [...watchlist, movie]
-        setWatchlist(newWatchlist)
-        localStorage.setItem('imdb', JSON.stringify(newWatchlist))
+        dispatch(addMovieToWatchlist(movie))
     }
 
     //remove from watchlist
     const removeFromWatchlist = (movie) => {
-        const filteredWatchlist = watchlist.filter((m) => {
-
-            return m.id != movie.id
-        })
-        setWatchlist(filteredWatchlist)
-        localStorage.setItem('imdb', JSON.stringify(filteredWatchlist))
+        dispatch(removeMovieFromWatchlist(movie))
     }
 
     const prevSlide = () => {
-
-        setActiveIndex((prevIndex) =>
-            prevIndex === 0 ? topRatedMovies.length - 1 : prevIndex - 1
-        );
+        dispatch(setActiveIndex({items : topRatedMovies, nextSlice : false, activeIndex : activeIndex}))
 
     };
 
     const nextSlide = () => {
 
-        setActiveIndex((prevIndex) =>
-            prevIndex === topRatedMovies.length - 1 ? 0 : prevIndex + 1
-        );
+        dispatch(setActiveIndex({items : topRatedMovies, nextSlice : true, activeIndex : activeIndex}))
     };
 
     return (

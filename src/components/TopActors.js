@@ -3,63 +3,37 @@ import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useState, useEffect } from 'react'
 import { faFilm, faCheck, faPlus, faAngleLeft, faAngleRight } from '@fortawesome/free-solid-svg-icons'
+import { setActiveIndex, setTopActors, fetchTopActors } from '../stores/topActorSlice'
+import { useDispatch, useSelector } from 'react-redux'
 
 function TopActors() {
-    const [topActors, setTopActors] = useState([])
-    const [activeIndex, setActiveIndex] = useState(0);
+    
+    const {status, topActors : topActors, activeIndex : activeIndex} = useSelector((state) => state.topActors)
 
-    const fetchTopActorsMovies = async () => {
-        let page = 1;
-        let topActor = [];
-        let actorCount = 0;
-
-        while (topActor.length < 20) {
-            try {
-                const response = await axios.get(`https://api.themoviedb.org/3/trending/person/day?api_key=731e37b9dcf15c6797f4888e7858a66d&page=${page}`);
-                let actors = response.data.results.filter(actor => actor.known_for_department == "Acting");
-
-                actors.sort((a, b) => {
-                    return b.popularity - a.popularity;
-                });
-
-                if (actors.length === 0) {
-                    break;
-                }
-
-                // Determine how many more movies can be added without exceeding 10
-                const remainingActorsCount = 20 - topActor.length;
-                topActor = topActor.concat(actors.slice(0, remainingActorsCount));
-                actorCount += actors.length;
-                page++;
-            } catch (error) {
-                console.error('Error fetching top actors movies:', error);
-                break; // Break the loop if an error occurs
-            }
-        }
-
-        setTopActors(topActor);
-    }
+    const dispatch = useDispatch()
 
     useEffect(() => {
-        fetchTopActorsMovies()
-    }, [])
+        dispatch(fetchTopActors())
+    }, [dispatch])
 
-    console.log(topActors)
+    useEffect(() =>{
+    if (status === "success")
+    {
+        dispatch(setTopActors(topActors))
+    }
+        
+    }, [status, topActors, dispatch])
+
+
+    console.log("top actors > ", topActors)
 
     const prevSlide = () => {
-
-        setActiveIndex((prevIndex) =>
-            prevIndex === 0 ? topActors.length - 1 : prevIndex - 1
-        );
-
-    };
+        dispatch(setActiveIndex({items : topActors, nextSlide : false, activeIndex : activeIndex}))
+    }
 
     const nextSlide = () => {
-
-        setActiveIndex((prevIndex) =>
-            prevIndex === topActors.length - 1 ? 0 : prevIndex + 1
-        );
-    };
+        dispatch(setActiveIndex({items : topActors, nextSlide : true, activeIndex : activeIndex}))
+    }
 
     return (
         <>

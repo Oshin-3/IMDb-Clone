@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { setPages, setActivePage } from '../stores/paginationSlice'
 
 function Pagination(props) {
 
@@ -7,8 +9,11 @@ function Pagination(props) {
     const total_pages = 500
     const maxVisiblePageCount = 10
 
-    const [pages, setpages] = useState([])
-    const [activePage, setActivePage] = useState(1)
+    // const [pages, setpages] = useState([])
+    // const [activePage, setActivePage] = useState(1)
+    const {pages, activePage} = useSelector((state) =>  state.pagination)
+
+    const dispatch = useDispatch()
 
     const handlePage = (e) => {
         let selectedPageNo = 0
@@ -24,7 +29,7 @@ function Pagination(props) {
             selectedPageNo = Number(e.target.dataset.id)
         }
 
-        setActivePage(selectedPageNo)
+        dispatch(setActivePage(selectedPageNo))
         onPageChange(selectedPageNo)
 
     }
@@ -41,10 +46,10 @@ function Pagination(props) {
     useEffect(() => {
 
         const newPages = getPages(total_pages, maxVisiblePageCount, activePage)
-
-        setpages(newPages)
+        dispatch(setPages(newPages))
 
     }, [activePage])
+
 
     return (
         <div className='flex justify-center text-slate-50 my-4'>

@@ -3,86 +3,52 @@ import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useState, useEffect } from 'react'
 import { faFilm, faCheck, faPlus, faAngleLeft, faAngleRight } from '@fortawesome/free-solid-svg-icons'
+import { useDispatch, useSelector } from 'react-redux'
+import { setUpcomingMovies, fetchUpcomingMovies, setActiveIndex } from '../stores/upcomingMoviesSlice'
+import { addMovieToWatchlist, removeMovieFromWatchlist } from '../stores/watchListSlice'
 
 function UpcomingMovies() {
+    
+    const {data : upcomingMoviesData, status, upcomingMovies : upcomingMovies, activeIndex : activeIndex} = useSelector((state) => state.upcomingMovies)
+    const watchlist = useSelector((state) => state.watchlistMovies)
 
-    const [upcomingMovies, setUpcomingMovies] = useState([])
-    const [watchlist, setWatchlist] = useState(JSON.parse(localStorage.getItem('imdb')) || [])
-    const [activeIndex, setActiveIndex] = useState(0);
-
-    const fetchUpcomingMovies = async () => {
-        const currentDate = new Date();
-        let page = 1;
-        let upcomingMovies = [];
-        let moviesCount = 0;
-
-        while (upcomingMovies.length < 20) {
-            try {
-                const response = await axios.get(`https://api.themoviedb.org/3/movie/upcoming?api_key=731e37b9dcf15c6797f4888e7858a66d&page=${page}`);
-                let movies = response.data.results.filter(movie => new Date(movie.release_date) > currentDate);
-
-                movies.sort((a, b) => {
-                    return b.popularity - a.popularity;
-                });
-
-                if (movies.length === 0) {
-                    break;
-                }
-
-                // Determine how many more movies can be added without exceeding 10
-                const remainingMoviesCount = 20 - upcomingMovies.length;
-                upcomingMovies = upcomingMovies.concat(movies.slice(0, remainingMoviesCount));
-                moviesCount += movies.length;
-                page++;
-            } catch (error) {
-                console.error('Error fetching upcoming movies:', error);
-                break; // Break the loop if an error occurs
-            }
-        }
-
-        setUpcomingMovies(upcomingMovies);
-    }
+    const dispatch = useDispatch()
 
 
     useEffect(() => {
-        fetchUpcomingMovies()
-    }, [])
+        dispatch(fetchUpcomingMovies())
+    }, [dispatch])
+
+    useEffect(() =>{
+    if (status === "success")
+    {
+        dispatch(setUpcomingMovies(upcomingMovies))
+    }
+        
+    }, [status, upcomingMovies, dispatch])
+
 
     //add to watchlist
     const addToWatchlist = (movie) => {
-        const newWatchlist = [...watchlist, movie]
-        setWatchlist(newWatchlist)
-        localStorage.setItem('imdb', JSON.stringify(newWatchlist))
+        dispatch(addMovieToWatchlist(movie))
     }
 
     //remove from watchlist
     const removeFromWatchlist = (movie) => {
-        const filteredWatchlist = watchlist.filter((m) => {
-
-            return m.id != movie.id
-        })
-        setWatchlist(filteredWatchlist)
-        localStorage.setItem('imdb', JSON.stringify(filteredWatchlist))
+        dispatch(removeMovieFromWatchlist(movie))
     }
 
     const prevSlide = () => {
-
-        setActiveIndex((prevIndex) =>
-          prevIndex === 0 ? upcomingMovies.length - 1 : prevIndex - 1
-        );
-    
+        dispatch(setActiveIndex({items : upcomingMovies, nextSlice : false, activeIndex : activeIndex}))
       };
     
       const nextSlide = () => {
-    
-        setActiveIndex((prevIndex) =>
-          prevIndex === upcomingMovies.length - 1 ? 0 : prevIndex + 1
-        );
-      };
+        dispatch(setActiveIndex({items : upcomingMovies, nextSlice : true, activeIndex : activeIndex}))
+    };
 
-      //console.log(activeIndex)
+      if (status == 'loading') return <h1>Loading...</h1>
+      if (status == 'error') return <h1>Error loading data</h1>
 
-    //console.log(upcomingMovies)
     return (
         <>
             <div className=' w-full'>

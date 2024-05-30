@@ -3,22 +3,21 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleLeft, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 import '../App.css';
+import { fetchCorouselData, setActiveIndex } from '../stores/carouselSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 
 function Carousel() {
-  const [topPicksMovies, setTopPicksMovies] = useState([]);
-  const [activeIndex, setActiveIndex] = useState(0);
+  //const [topPicksMovies, setTopPicksMovies] = useState([]);
+  const {data : topPicksMovies, status, activeIndex : activeIndex} = useSelector((status) => status.carousel)
+  //const [activeIndex, setActiveIndex] = useState(0);
+
+  const dispatch = useDispatch()
 
   const interval = 5000; // 5 seconds
 
   const fetchTopPicksMovies = () => {
-    axios.get(`https://api.themoviedb.org/3/movie/now_playing?api_key=731e37b9dcf15c6797f4888e7858a66d`)
-      .then((res) => {
-        setTopPicksMovies(res.data.results);
-      })
-      .catch((error) => {
-        console.error('Error fetching top picks movies:', error);
-      });
+    dispatch(fetchCorouselData())
   };
 
   useEffect(() => {
@@ -27,28 +26,34 @@ function Carousel() {
 
   useEffect(() => {
     const autoPlay = setInterval(() => {
-      setActiveIndex((prevIndex) =>
-        prevIndex === topPicksMovies.length - 1 ? 0 : prevIndex + 1
-      );
+      // setActiveIndex((prevIndex) =>
+      //   prevIndex === topPicksMovies.length - 1 ? 0 : prevIndex + 1
+      // );
+      dispatch(setActiveIndex({topPicksMovies : topPicksMovies, nextSlice : true, activeIndex : activeIndex}))
     }, interval);
     return () => clearInterval(autoPlay);
-  }, [topPicksMovies, interval]);
+  }, [topPicksMovies, interval, activeIndex, dispatch]);
 
 
   const prevSlide = () => {
 
-    setActiveIndex((prevIndex) =>
-      prevIndex === 0 ? topPicksMovies.length - 1 : prevIndex - 1
-    );
-
+    // setActiveIndex((prevIndex) =>
+    //   prevIndex === 0 ? topPicksMovies.length - 1 : prevIndex - 1
+    // );
+    dispatch(setActiveIndex({topPicksMovies : topPicksMovies, nextSlice : false, activeIndex : activeIndex}))
   };
 
   const nextSlide = () => {
 
-    setActiveIndex((prevIndex) =>
-      prevIndex === topPicksMovies.length - 1 ? 0 : prevIndex + 1
-    );
+    // setActiveIndex((prevIndex) =>
+    //   prevIndex === topPicksMovies.length - 1 ? 0 : prevIndex + 1
+    // );
+    dispatch(setActiveIndex({topPicksMovies : topPicksMovies, nextSlice : true, activeIndex : activeIndex}))
   };
+
+  
+  if (status == 'loading') return <h1>Loading...</h1>
+  if (status == 'error') return <h1>Error loading data</h1>
 
   return (
     <>

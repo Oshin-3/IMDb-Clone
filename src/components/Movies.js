@@ -1,44 +1,39 @@
 import React from 'react'
-import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar, faPlus, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState } from 'react'
 import Pagination from './Pagination'
+import { useDispatch, useSelector } from 'react-redux';
+import { addMovieToWatchlist, removeMovieFromWatchlist } from '../stores/watchListSlice';
+import { fetchMovieData } from '../stores/moviesSlice';
+
 const _ = require("lodash");
 
 function Movies() {
 
-    const [movies, setMovies] = useState([])
-    //favorite movies list to add in the watchlist page
-    const [watchlist, setWatchlist] = useState(JSON.parse(localStorage.getItem('imdb')) || [])
+    const watchlist = useSelector((state) => state.watchlistMovies)
+    const {data: movies, status} = useSelector((state) =>  state.movies)
     
+    const dispatch = useDispatch()
     //add to watchlist
     const addToWatchlist = (movie) => {
-        const newWatchlist = [...watchlist, movie]
-        setWatchlist(newWatchlist)
-        localStorage.setItem('imdb', JSON.stringify(newWatchlist))
+        dispatch(addMovieToWatchlist(movie))
     }
 
     //remove from watchlist
     const removeFromWatchlist = (movie) => {
-        const filteredWatchlist = watchlist.filter((m) => {
-
-            return m.id != movie.id
-        })
-        setWatchlist(filteredWatchlist)
-        localStorage.setItem('imdb', JSON.stringify(filteredWatchlist))
+        dispatch(removeMovieFromWatchlist(movie.id))
     }
-
-    //console.log(watchlist)
-
 
     //fetch the movies details from API using axios
     const fetchMovies = (pageNum) => {
-        axios.get(`https://api.themoviedb.org/3/trending/movie/day?api_key=731e37b9dcf15c6797f4888e7858a66d&page=${pageNum}`)
-            .then((res) => {
-                setMovies(res.data.results)
-            })
+        // axios.get(`https://api.themoviedb.org/3/trending/movie/day?api_key=731e37b9dcf15c6797f4888e7858a66d&page=${pageNum}`)
+        //     .then((res) => {
+        //         setMovies(res.data.results)
+        //     })
+        dispatch(fetchMovieData(pageNum))
     }
+    
     useEffect(() => {
         // let moviesFromLocalstorage = localStorage.getItem('imdb')
         // moviesFromLocalstorage = JSON.parse(moviesFromLocalstorage) || []
@@ -48,7 +43,10 @@ function Movies() {
         //console.log("Watchlist updated: ", watchlist);
         fetchMovies(1)
         
-    },[])
+    },[dispatch])
+
+    if (status == 'loading') return <h1>Loading...</h1>
+    if (status == 'error') return <h1>Error loading data</h1>
 
 
     return (
@@ -74,7 +72,7 @@ function Movies() {
                                 {movie.title.length > 50 ? movie.title.substring(0, 50) + "..." : movie.title}
                             </div>
                             <div className='w-[170px] h-[5vh] text-sky-600 text-center p-1 bg-opacity-40 bg-black rounded-l m-2 mt-12'>
-
+                                
                                 {
                                     watchlist.some(item => {return JSON.stringify(item.id) === JSON.stringify(movie.id)})  ? (
                                         <button onClick={() => removeFromWatchlist(movie)} ><span className='pr-2'><FontAwesomeIcon icon={faCheck} /></span>Watchlist</button>
