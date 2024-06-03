@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronUp, faStar, faPenToSquare, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronUp, faStar, faPenToSquare, faXmark, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { useSelector, useDispatch } from 'react-redux';
-import { setFilteredGenre, setFilteredMovies, setSortCriteria, sortOrder, setSorting, setEditFlag, setIsChecked, setselectAllFlg, setSelectedMovieCount, setMovieIds, removeMovies } from '../stores/watchlistFunctionsSlice';
+import { setFilteredGenre, setFilteredMovies, setSortCriteria, setSorting, setEditFlag, setIsChecked, setselectAllFlg, setSelectedMovieCount, setMovieIds, removeMovies, searchMovies } from '../stores/watchlistFunctionsSlice';
 
 function Watchlist() {
 
@@ -104,6 +104,15 @@ function Watchlist() {
     }
   }
 
+  const handleSearch = (e) => {
+    const search = e.target.value.toLowerCase()
+    const filteredMovies = favorites.filter(movie => 
+      movie.title.toLowerCase().includes(search) ||
+      movie.overview.toLowerCase().includes(search)
+    )
+    dispatch(searchMovies(filteredMovies))
+  }
+
   return (
     <div className='flex justify-center w-full bg-gray-300 relative top-14'>
       <div className='w-[120vh] bg-slate-50 mt-3'>
@@ -111,11 +120,15 @@ function Watchlist() {
           <div className='float-root bg-blue-600 items-center'>
             <p className='text-3xl float-left'>Your Watchlist</p>
             {
-              editFlag == "0" ? (<div className='pl-10 text-xl float-right mr-3 text-gray-400' onClick={() => dispatch(setEditFlag("1"))}>
+              editFlag == "0" ? (<div className='text-xl float-right mr-3 text-gray-400' onClick={() => dispatch(setEditFlag("1"))}>
                 <FontAwesomeIcon icon={faPenToSquare}></FontAwesomeIcon>
                 <span>EDIT</span>
-              </div>) : (<div className='pl-10 text-xl float-right mr-3 text-gray-400' onClick={() => dispatch(setEditFlag("0"))}><FontAwesomeIcon icon={faXmark}></FontAwesomeIcon></div>)
+              </div>) : (<div className='pl-10 text-xl float-right text-gray-400' onClick={() => dispatch(setEditFlag("0"))}><FontAwesomeIcon icon={faXmark}></FontAwesomeIcon></div>)
             }
+            <div className='float-right'>
+              <FontAwesomeIcon icon={faMagnifyingGlass}></FontAwesomeIcon>
+              <input type='text' className=' h-[5vh] w-[30vh] border rounded-xl p-2 mr-3 ml-2' placeholder='Search' onChange={handleSearch}></input>
+            </div>
           </div>
 
           <div className='flex space-x-2 p-2 w-full flow-root'>

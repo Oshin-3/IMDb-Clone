@@ -112,10 +112,14 @@ const watchListFunctionSlice = createSlice({
                 state.filteredMovies = [...moviesAfterDelete]
                 localStorage.setItem('imdb', JSON.stringify(moviesAfterDelete))
             }
+        },
+        searchMovies(state, action)
+        {
+            state.filteredMovies = action.payload
         }
     }
 })
 
-export const { setFilteredGenre, setFilteredMovies, setSortCriteria, sortOrder, setSorting, setEditFlag, setIsChecked, setselectAllFlg, setSelectedMovieCount, setMovieIds, removeMovies } = watchListFunctionSlice.actions
+export const { setFilteredGenre, setFilteredMovies, setSortCriteria, sortOrder, setSorting, setEditFlag, setIsChecked, setselectAllFlg, setSelectedMovieCount, setMovieIds, removeMovies, searchMovies } = watchListFunctionSlice.actions
 
 export default watchListFunctionSlice.reducer
