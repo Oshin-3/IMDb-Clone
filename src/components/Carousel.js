@@ -56,7 +56,7 @@ function Carousel() {
   if (status == 'error') return <h1>Error loading data</h1>
 
   return (
-    <>
+    <div className='relative top-14'>
       {topPicksMovies.length > 0 && (
         <div className='carousel-container ml-10 mr-10'>
           <button onClick={prevSlide} className='text-white absolute top-40 z-10 w-12 h-14 bg-gray-900 bg-opacity-60'>
@@ -86,7 +86,7 @@ function Carousel() {
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 }
 

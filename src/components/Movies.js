@@ -14,6 +14,7 @@ function Movies() {
     const watchlist = useSelector((state) => state.watchlistMovies)
     const {data: movies, status} = useSelector((state) =>  state.movies)
     
+    console.log(movies)
     const dispatch = useDispatch()
     //add to watchlist
     const addToWatchlist = (movie) => {
@@ -50,7 +51,7 @@ function Movies() {
 
 
     return (
-        <div className='p-3 mt-2 w-full  '>
+        <div className='p-3 w-full relative top-14'>
             <div className='text-2xl mb-3 font-bold text-amber-400 pl-2'>
                 Trending Movies
             </div>

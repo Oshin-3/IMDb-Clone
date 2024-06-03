@@ -51,7 +51,7 @@ function UpcomingMovies() {
 
     return (
         <>
-            <div className=' w-full'>
+            <div className='w-full mt-20'>
                 <div className='text-2xl mt-5 ml-7 font-bold text-amber-400 pl-2'>
                     Upcoming Movies
                 </div>

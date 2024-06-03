@@ -105,7 +105,7 @@ function Watchlist() {
   }
 
   return (
-    <div className='flex justify-center w-full bg-gray-300'>
+    <div className='flex justify-center w-full bg-gray-300 relative top-14'>
       <div className='w-[120vh] bg-slate-50 mt-3'>
         <div className='h-[15vh] p-4 border-b-4 '>
           <div className='float-root bg-blue-600 items-center'>
