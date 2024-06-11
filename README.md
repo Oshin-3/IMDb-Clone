@@ -173,16 +173,16 @@ npm run build
 
 ## Design 
 __Home Page__
-![Home Page](images\Home_Page.png)
+![Home Page](images/Home_Page.png)
 __Movies Page__
-![Movies Page 1](images\Movies_Page_1.png)
-![Movies Page 2](images\Movies_Page_2.png)
+![Movies Page 1](images/Movies_Page_1.png)
+![Movies Page 2](images/Movies_Page_2.png)
 __Watchlist Page__
-![Watchlist Page](images\Watchlist_Movies.png)
+![Watchlist Page](images/Watchlist_Movies.png)
 __Genre Filter__
-![Genre Filter](images\WatchList_Triller.png)
+![Genre Filter](images/WatchList_Triller.png)
 __Soreted according to Popularity__
-![Popularity](images\Watlist_Sorted_Popularity_desc.png)
+![Popularity](images/Watlist_Sorted_Popularity_desc.png)
 __Remove Movies from Watchlist__ 
-![Remove Movies](images\Watchlist_delete_selection.png)
-![After Delete](images\Watchlist_after_delete.png)
+![Remove Movies](images/Watchlist_delete_selection.png)
+![After Delete](images/Watchlist_after_delete.png)
